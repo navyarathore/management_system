@@ -1,18 +1,22 @@
 # Student Management System
 
-Simple CRUD app for managing student records.
+Project made as a part of xebia internship drive.
 
-**Stack:** Node.js + Express + SQLite (better-sqlite3) + static HTML/CSS/JS frontend.
+A small web app I put together to manage student records. Nothing fancy — you can add students, edit them, delete them, and search through the list. It runs locally with a single command.
 
-## Features
+I went with Node + Express on the backend and plain HTML/CSS/JS on the frontend because I wanted to keep the moving parts to a minimum. SQLite handles storage so there's no separate database to install or configure.
 
-- Add, view, edit, delete students
-- Live search across name, roll number, course, and email
-- REST API + decoupled static frontend
-- Persistent SQLite storage with unique roll number constraint
-- Input validation (server + client)
+## What's inside
 
-## Setup
+- A REST API for student records (create, read, update, delete)
+- A static frontend that talks to that API
+- A live search box that filters by name, roll number, course, or email
+- Form validation on both ends so you don't end up with empty or duplicate records
+- A unique constraint on roll numbers — the API returns `409` if you try to reuse one
+
+## Running it locally
+
+You'll need Node 18 or newer. Then:
 
 ```bash
 cd management_system
@@ -20,27 +24,25 @@ npm install
 npm start
 ```
 
-Open http://localhost:3000
+That starts the server on port 3000. Open http://localhost:3000 in your browser and you should see the UI.
 
-For auto-reload during development:
+If you're poking at the code, `npm run dev` uses Node's built-in `--watch` flag, so the server restarts when you save a file.
 
-```bash
-npm run dev
-```
+The SQLite database file (`students.db`) is created automatically the first time the server starts. It lives next to `server.js`. Delete it if you ever want a clean slate.
 
-## REST API
+## The API
 
-Base URL: `http://localhost:3000/api/students`
+Everything lives under `/api/students`. Here's the shape of it:
 
-| Method | Endpoint            | Description                  |
-|--------|---------------------|------------------------------|
-| GET    | `/api/students`     | List all students (optional `?search=<query>`) |
-| GET    | `/api/students/:id` | Get one student              |
-| POST   | `/api/students`     | Create a new student         |
-| PUT    | `/api/students/:id` | Update a student (partial)   |
-| DELETE | `/api/students/:id` | Delete a student             |
+| Method | Path                   | What it does                            |
+|--------|------------------------|-----------------------------------------|
+| GET    | `/api/students`        | List all students.                      |
+| GET    | `/api/students/:id`    | Fetch one student by ID                 |
+| POST   | `/api/students`        | Create a new student                    |
+| PUT    | `/api/students/:id`    | Update a student                        |
+| DELETE | `/api/students/:id`    | Remove a student                        |
 
-### Student schema
+A student record looks like this:
 
 ```json
 {
@@ -54,9 +56,11 @@ Base URL: `http://localhost:3000/api/students`
 }
 ```
 
-Required on create: `name`, `roll_no`, `course`. `roll_no` must be unique.
+`name`, `roll_no`, and `course` are required when creating. `grade` and `email` are optional. The server will reject invalid email formats and empty strings.
 
-### Example: create
+### A few curl examples
+
+Create:
 
 ```bash
 curl -X POST http://localhost:3000/api/students \
@@ -64,7 +68,7 @@ curl -X POST http://localhost:3000/api/students \
   -d '{"name":"Asha Rao","roll_no":"CS21-045","course":"B.Tech CSE","grade":"A","email":"asha@example.com"}'
 ```
 
-### Example: update
+Update just the grade (PUT accepts partial bodies):
 
 ```bash
 curl -X PUT http://localhost:3000/api/students/1 \
@@ -72,22 +76,32 @@ curl -X PUT http://localhost:3000/api/students/1 \
   -d '{"grade":"A+"}'
 ```
 
-### Example: delete
+Delete:
 
 ```bash
 curl -X DELETE http://localhost:3000/api/students/1
 ```
 
-## Project Structure
+Search:
+
+```bash
+curl "http://localhost:3000/api/students?search=asha"
+```
+
+## How the code is laid out
 
 ```
 management_system/
-├── server.js          # Express app + REST routes
-├── db.js              # SQLite connection + schema
+├── server.js          
+├── db.js              
 ├── package.json
-├── public/            # Static frontend
-│   ├── index.html
+├── public/            
+│   ├── index.html    
 │   ├── style.css
-│   └── app.js
-└── students.db        # Auto-created on first run
+│   └── app.js         
+├── students.db        
+└── README.md
 ```
+
+I kept the backend in a single `server.js` on purpose. With only one resource and five routes, splitting it into controllers and routers felt like overkill. If this ever grew (more entities, auth, reporting), I'd break it up then.
+
