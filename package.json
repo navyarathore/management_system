@@ -1,0 +1,14 @@
+{
+  "name": "student-management-system",
+  "version": "1.0.0",
+  "description": "Simple Student Management System with CRUD operations (Express + SQLite + static frontend)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "express": "^4.21.0"
+  }
+}
